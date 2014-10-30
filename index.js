@@ -3,6 +3,7 @@
  * Copyright(c) 2011 Sencha Inc.
  * Copyright(c) 2014 Jonathan Ong
  * Copyright(c) 2014-2015 Douglas Christopher Wilson
+ * Copyright(c) 2014 Maël Nison
  * MIT Licensed
  */
 
@@ -29,7 +30,26 @@ var Tokens = require('csrf');
  * @api public
  */
 
-module.exports = function csurf(options) {
+var csurf = module.exports = function csurf(options) {
+  var generator = csurf.generator(options)
+  var validator = csurf.validator(options)
+
+  return function csurf(req, res, next) {
+    generator(req, res, function() {
+      try {
+        validator(req, res, next);
+      } catch (error) {
+        next(error)
+      }
+    })
+  }
+}
+
+csurf.generator = function csurfGeneratorBuilder(options) {
+  var secret
+  var token
+
+  // default options
   options = options || {};
 
   // get cookie options
@@ -38,30 +58,14 @@ module.exports = function csurf(options) {
   // get session options
   var sessionKey = options.sessionKey || 'session'
 
-  // get value getter
+  // token repo
+  var tokens = new Tokens(options)
+
+  // csrf parameter getter
   var value = options.value || defaultValue
 
-  // token repo
-  var tokens = new Tokens(options);
-
-  // ignored methods
-  var ignoreMethods = options.ignoreMethods === undefined
-    ? ['GET', 'HEAD', 'OPTIONS']
-    : options.ignoreMethods
-
-  if (!Array.isArray(ignoreMethods)) {
-    throw new TypeError('option ignoreMethods must be an array')
-  }
-
-  // generate lookup
-  var ignoreMethod = getIgnoredMethods(ignoreMethods)
-
-  return function csrf(req, res, next) {
-    var secret = getsecret(req, sessionKey, cookie)
-    var token
-
-    // lazy-load token getter
-    req.csrfToken = function csrfToken() {
+  return function csurfGenerator(req, res, next) {
+    req.csrfToken = function() {
       var sec = !cookie
         ? getsecret(req, sessionKey, cookie)
         : secret
@@ -92,14 +96,38 @@ module.exports = function csurf(options) {
       setsecret(req, res, sessionKey, secret, cookie)
     }
 
+    req.verifyToken = function() {
+      verifytoken(req, tokens, secret, value(req))
+    }
+
+    next();
+  }
+}
+
+csurf.validator = function csurfValidatorBuilder(options) {
+  options = options || {};
+
+  // ignored methods
+  var ignoreMethods = options.ignoreMethods === undefined
+    ? ['GET', 'HEAD', 'OPTIONS']
+    : options.ignoreMethods
+
+  if (!Array.isArray(ignoreMethods)) {
+    throw new TypeError('option ignoreMethods must be an array')
+  }
+
+  // generate lookup
+  var ignoreMethod = getIgnoredMethods(ignoreMethods)
+
+  return function csurfValidator(req, res, next) {
     // verify the incoming token
     if (!ignoreMethod[req.method]) {
-      verifytoken(req, tokens, secret, value(req))
+      req.verifyToken()
     }
 
     next()
   }
-};
+}
 
 /**
  * Default value function, checking the `req.body`
