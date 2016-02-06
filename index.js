@@ -46,9 +46,6 @@ var csurf = module.exports = function csurf(options) {
 }
 
 csurf.generator = function csurfGeneratorBuilder(options) {
-  var secret
-  var token
-
   // default options
   options = options || {};
 
@@ -65,6 +62,9 @@ csurf.generator = function csurfGeneratorBuilder(options) {
   var value = options.value || defaultValue
 
   return function csurfGenerator(req, res, next) {
+    var secret = getsecret(req, sessionKey, cookie)
+    var token
+
     req.csrfToken = function() {
       var sec = !cookie
         ? getsecret(req, sessionKey, cookie)
