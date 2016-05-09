@@ -1,4 +1,6 @@
-# csurf
+# csurfer
+
+Temporary fork of [csurf](https://www.npmjs.com/package/csurf) until [split token/generation](#split-token-generationvalidation) lands.
 
 [![NPM Version][npm-image]][npm-url]
 [![NPM Downloads][downloads-image]][downloads-url]
@@ -23,13 +25,13 @@ If you have questions on how this module is implemented, please read
 ## Installation
 
 ```sh
-$ npm install csurf
+$ npm install csurfer
 ```
 
 ## API
 
 ```js
-var csurf = require('csurf')
+var csurf = require('csurfer')
 ```
 
 ### csurf([options])
@@ -124,7 +126,7 @@ that requires a CSRF token to post back.
 
 ```js
 var cookieParser = require('cookie-parser')
-var csrf = require('csurf')
+var csrf = require('csurfer')
 var bodyParser = require('body-parser')
 var express = require('express')
 
@@ -175,7 +177,7 @@ do not check for a valid CSRF token.
 
 ```js
 var cookieParser = require('cookie-parser')
-var csrf = require('csurf')
+var csrf = require('csurfer')
 var bodyParser = require('body-parser')
 var express = require('express')
 
@@ -222,7 +224,7 @@ error messages.
 ```js
 var bodyParser = require('body-parser')
 var cookieParser = require('cookie-parser')
-var csrf = require('csurf')
+var csrf = require('csurfer')
 var express = require('express')
 
 var app = express()
