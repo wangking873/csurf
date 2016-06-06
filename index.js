@@ -119,14 +119,20 @@ csurf.validator = function csurfValidatorBuilder(options) {
   // generate lookup
   var ignoreMethod = getIgnoredMethods(ignoreMethods)
 
+  var bypass = options.bypass || defaultBypass;
+
   return function csurfValidator(req, res, next) {
     // verify the incoming token
-    if (!ignoreMethod[req.method]) {
+    if (!bypass(req) && !ignoreMethod[req.method]) {
       req.verifyToken()
     }
 
     next()
   }
+}
+
+function defaultBypass() {
+  return false;
 }
 
 /**
