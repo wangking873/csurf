@@ -1,5 +1,5 @@
 {
-  "name": "csurf",
+  "name": "shimo-csurf",
   "description": "CSRF token middleware",
   "version": "1.8.3",
   "author": "Jonathan Ong <me@jongleberry.com> (http://jongleberry.com)",
